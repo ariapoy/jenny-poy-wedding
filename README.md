@@ -47,7 +47,7 @@ npx serve .
 1. 建立 Google Sheets 試算表
 2. 新增 Apps Script，貼入 `google-apps-script.js` 中的程式碼
 3. 部署為網頁應用程式，取得網址
-4. 將網址填入 `rsvp.html` 中的 `SCRIPT_URL` 變數
+4. 將網址填入 `index.html` 中的 `RSVP_COUNT_ENDPOINT` 變數
 
 ## 內容替換清單
 

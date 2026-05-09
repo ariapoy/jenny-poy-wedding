@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poy &amp; Jenny 的結婚喜宴 | OpenWedding</title>
-  <meta name="description" content="呂伍府喜宴 — 民國 115 年 10 月 03 日，台北國泰萬怡酒店（霖苑廳）">
+  <meta name="description" content="呂伍府喜宴 — 民國 115 年 10 月 03 日中午 12:00，台北國泰萬怡酒店（霖苑廳）">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,14 +31,6 @@
 <!-- ===================== Paper ===================== -->
 <div class="paper-wrap">
 
-  <!-- PDF button (top-right) -->
-  <a href="#" class="btn-pdf" title="關於兩人的故事（即將提供）">
-    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 0h8l4 4v11a1 1 0 01-1 1H1a1 1 0 01-1-1V1a1 1 0 011-1h3zm8 1.5V4h2.5L12 1.5zM2 2v12h12V5h-3a1 1 0 01-1-1V2H2zm2.5 6h7a.5.5 0 010 1h-7a.5.5 0 010-1zm0 2h7a.5.5 0 010 1h-7a.5.5 0 010-1zm0-4h3a.5.5 0 010 1h-3a.5.5 0 010-1z"/>
-    </svg>
-    PDF
-  </a>
-
   <!-- ── Title ── -->
   <h1 class="paper-title">Poy &amp; Jenny 的結婚喜宴</h1>
 
@@ -55,7 +47,7 @@
       <svg width="13" height="13" viewBox="0 0 16 16" fill="#666" xmlns="http://www.w3.org/2000/svg">
         <path d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/>
       </svg>
-      <strong>民國 115 年 10 月 03 日（星期六）</strong>
+      <strong>民國 115 年 10 月 03 日（星期六）中午 12:00</strong>
     </span>
     <span class="paper-meta-item">
       <!-- venue icon -->
@@ -79,7 +71,7 @@
       <span class="meta-badge green">Public</span>
     </span>
     <span class="paper-meta-item">
-      Submission&nbsp;<strong>#1</strong>
+      Submission&nbsp;<strong id="rsvpCountMeta">#0</strong>
     </span>
   </div>
 
@@ -101,16 +93,16 @@
       </div>
     </div>
 
-    <!-- Supplementary Material -->
+    <!-- Registration Link -->
     <div class="paper-field">
-      <span class="field-label">Supplementary Material:</span>
+      <span class="field-label">Registration Link:</span>
       <div class="field-body">
-        <a href="https://ariapoy.github.io/jenny-poy-wedding/" target="_blank" id="githubLink">
+        <a href="rsvp.html" id="rsvpLink">
           <!-- link icon -->
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M4.715 6.542L3.343 7.914a3 3 0 104.243 4.243l1.828-1.829A3 3 0 008.586 8H7a3 3 0 00-2.122.879L4.715 6.542zm5.569-3.084L8.456 5.286A3 3 0 007.414 8H9a3 3 0 002.121-.879l1.172-1.171a3 3 0 10-4.243-4.243l-.172.171-.829.829.172-.172a3 3 0 014.063.822z"/>
           </svg>
-          Wedding Website
+          RSVP Link
         </a>
       </div>
     </div>
@@ -136,7 +128,7 @@
     <!-- Submission Number -->
     <div class="paper-field">
       <span class="field-label">Submission Number:</span>
-      <div class="field-body">1</div>
+      <div class="field-body" id="rsvpCountField">0</div>
     </div>
 
   </div>
@@ -238,6 +230,30 @@
 </footer>
 
 <script>
+  const RSVP_COUNT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz1adR-BZ9OO_gehO1rQW1SeRqm5tthv5uBCzCq7FNrSlAzA1Zk9XURWkOBHkdW5mAcRw/exec';
+
+  function setRsvpCount(count) {
+    const normalizedCount = Number.parseInt(count, 10);
+    if (!Number.isFinite(normalizedCount) || normalizedCount < 0) return;
+
+    document.getElementById('rsvpCountMeta').textContent = `#${normalizedCount}`;
+    document.getElementById('rsvpCountField').textContent = normalizedCount;
+  }
+
+  window.updateRsvpCount = function (payload) {
+    if (!payload || typeof payload.count === 'undefined') return;
+    setRsvpCount(payload.count);
+  };
+
+  if (RSVP_COUNT_ENDPOINT) {
+    const callbackName = 'updateRsvpCount';
+    const separator = RSVP_COUNT_ENDPOINT.includes('?') ? '&' : '?';
+    const countScript = document.createElement('script');
+    countScript.src = `${RSVP_COUNT_ENDPOINT}${separator}callback=${callbackName}`;
+    countScript.async = true;
+    document.head.appendChild(countScript);
+  }
+
   // Gallery lightbox
   document.querySelectorAll('.or-gallery-item').forEach(item => {
     item.addEventListener('click', function () {

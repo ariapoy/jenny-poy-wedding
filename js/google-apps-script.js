@@ -17,7 +17,7 @@
  *    - 以誰的身分執行：我（your@gmail.com）
  *    - 誰可以存取：所有人
  * 6. 點選「部署」，複製「網頁應用程式網址」
- * 7. 將網址貼入 rsvp.html 中的 SCRIPT_URL 變數
+ * 7. 將網址貼入 index.html 中的 RSVP_COUNT_ENDPOINT 變數
  *
  * ================================================
  * 將以下程式碼貼入 Google Apps Script 編輯器：
@@ -28,6 +28,7 @@
 // ========== 貼入 Google Apps Script 的程式碼 ==========
 
 const SHEET_NAME = 'RSVP回覆'; // 試算表分頁名稱（可自訂）
+const RSVP_SHEET_GID = 715397205; // Google Sheet 分頁 gid，只留在 Apps Script 端
 
 function doPost(e) {
   try {
@@ -84,11 +85,52 @@ function doPost(e) {
   }
 }
 
-// GET 請求用於測試（可選）
-function doGet(e) {
+function getRsvpSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetById = ss.getSheets().find(sheet => sheet.getSheetId() === RSVP_SHEET_GID);
+
+  return sheetById || ss.getSheetByName(SHEET_NAME) || ss.getActiveSheet();
+}
+
+function getRsvpCount_() {
+  const sheet = getRsvpSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return 0;
+
+  const timestamps = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  return timestamps.filter(row => String(row[0]).trim() !== '').length;
+}
+
+function jsonp_(callback, payload) {
+  const safeCallback = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/.test(callback || '')
+    ? callback
+    : '';
+
+  if (safeCallback) {
+    return ContentService
+      .createTextOutput(`${safeCallback}(${JSON.stringify(payload)});`)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ status: 'active', message: 'RSVP form is ready!' }))
+    .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// GET 請求只回傳 RSVP 筆數，不公開試算表連結或內容
+function doGet(e) {
+  try {
+    return jsonp_(e.parameter.callback, {
+      status: 'success',
+      count: getRsvpCount_(),
+    });
+  } catch (error) {
+    return jsonp_(e.parameter.callback, {
+      status: 'error',
+      count: 0,
+      message: error.toString(),
+    });
+  }
 }
 
 // ========== 程式碼結束 ==========
